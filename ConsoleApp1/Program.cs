@@ -1,7 +1,6 @@
 ﻿using CSScriptLibrary;
 using System;
 using System.Reflection;
-using Microsoft.CSharp;
 
 namespace ConsoleApp1
 {
@@ -89,14 +88,14 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
 
-            CSScript.EvaluatorConfig.Engine = EvaluatorEngine.Roslyn;
+            CSScript.EvaluatorConfig.Engine = EvaluatorEngine.Mono;
             //CSScript.EvaluatorConfig.Access = EvaluatorAccess.Singleton;
-            CSScript.GlobalSettings.InMemoryAssembly = true;
+            //CSScript.GlobalSettings.InMemoryAssembly = true;
 
             string code1 = @"using System;
                             public class Script1
                             {
-                                public int Sum(int a, int b)
+                                public static int Sum(int a, int b)
                                 {
                                     dynamic d = a + 1;
                                     return d + b;
@@ -106,39 +105,45 @@ namespace ConsoleApp1
             string code2 = @"using System;
                             public class Script2
                             {
-                                public int Sum(int a, int b)
+                                public static int Sum(int a, int b)
                                 {
-                                    dynamic d = a + 2;
+                                    dynamic d = a - 1;
                                     return d + b;
                                 }
                             }";
 
-            //Assembly asm1 = CSScript.Evaluator.CompileCode(code1);
-            //Assembly asm2 = CSScript.Evaluator.CompileCode(code2);
-            string asm1File = CSScript.CompileCode(code1);
-            string asm2File = CSScript.CompileCode(code2);
-            
+            Assembly asm1 = CSScript.Evaluator.CompileCode(code1);
+            Assembly asm2 = CSScript.Evaluator.CompileCode(code2);
+            //string asm1File = asm10.Location;
+            //string asm2File = asm20.Location;
+
             int result;
             for (int i = 0; i < 100000; i++)
             {
                 if ((i % 2) == 0)
                 {
                     Console.WriteLine("Script1");
-                    Assembly asm1 = Assembly.LoadFrom(asm1File);
+                    //Assembly asm1 = CSScript.Evaluator.CompileCode(code1);
+                    //Assembly asm1 = Assembly.LoadFrom(asm1File);
                     Type type = asm1.GetType("Script1");
                     object instance = Activator.CreateInstance(type);
                     result = (int) type.InvokeMember("Sum", BindingFlags.InvokeMethod, null, instance, new object[] { i, 1 });
-                    //AsmHelper helper = new AsmHelper(asm11);
+                    //AsmHelper helper = new AsmHelper(asm1);
                     //object instance = helper.CreateObject("Script1");
                     //FastInvokeDelegate methodInvoker = helper.GetMethodInvoker("Script1.Sum", new object[] { i, 1 });
                     //result = (int) methodInvoker(instance, i, 1);
                 } else 
                 {
                     Console.WriteLine("Script2");
-                    Assembly asm2 = Assembly.LoadFrom(asm2File);
+                    //Assembly asm2 = CSScript.Evaluator.CompileCode(code2);
+                    //Assembly asm2 = Assembly.LoadFrom(asm2File);
                     Type type = asm2.GetType("Script2");
                     object instance = Activator.CreateInstance(type);
                     result = (int)type.InvokeMember("Sum", BindingFlags.InvokeMethod, null, instance, new object[] { i, 1 });
+                    //AsmHelper helper = new AsmHelper(asm2);
+                    //object instance = helper.CreateObject("Script2");
+                    //FastInvokeDelegate methodInvoker = helper.GetMethodInvoker("Script2.Sum", new object[] { i, 1 });
+                    //result = (int)methodInvoker(instance, i, 1);
                 }
 
                 Console.WriteLine("i:{0}  --  result:{1}", i, result);
